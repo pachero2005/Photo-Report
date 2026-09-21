@@ -76,27 +76,3 @@ jobs:
         with:
           name: app-debug-apk
           path: bin/*.apk
-              ffmpeg \
-              libsdl2-dev \
-              libsdl2-image-dev \
-              libsdl2-mixer-dev \
-              libsdl2-ttf-dev \
-              libportmidi-dev \
-              libswscale-dev \
-              libavformat-dev \
-              libavcodec-dev \
-              zlib1g-dev \
-              libffi-dev \
-              libssl-dev
-          pip install --upgrade pip
-          pip install buildozer cython==0.29.36
-
-      - name: Compilar APK con Buildozer
-        run: |
-          buildozer -v android debug
-
-      - name: Subir APK como artefacto
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug-apk
-          path: bin/*.apk
