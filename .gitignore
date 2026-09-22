@@ -1,0 +1,14 @@
+# Directorios de compilación y caché de Buildozer y Python
+.buildozer/
+bin/
+__pycache__/
+*.pyc
+*.pyo
+
+# Archivos de Gradle y Android Studio (si se generan localmente)
+.gradle/
+local.properties
+.idea/
+
+# Archivos de estado temporal o de depuración local de la app
+inspection_state_v21.json
