@@ -34,45 +34,23 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           accept-android-sdk-licenses: true
+          packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
 
-      - name: Install Android SDK packages
+      - name: Verify Android SDK
         shell: bash
         run: |
           set -euxo pipefail
           SDK_ROOT="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
-          SDKMANAGER="$(find "$SDK_ROOT/cmdline-tools" -name sdkmanager -type f | head -n 1)"
 
-          test -x "$SDKMANAGER"
-
-          yes | "$SDKMANAGER" --sdk_root="$SDK_ROOT" --licenses >/dev/null || true
-          "$SDKMANAGER" --sdk_root="$SDK_ROOT" \
-            "platform-tools" \
-            "platforms;android-34" \
-            "build-tools;34.0.0"
-
-          AIDL_PATH="$(find "$SDK_ROOT/build-tools" -name aidl -type f | head -n 1)"
-          test -x "$AIDL_PATH"
-
-      - name: Verify Android SDK
-        run: |
-          SDK_ROOT="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
-          SDKMANAGER="$(find "$SDK_ROOT/cmdline-tools" -name sdkmanager -type f | head -n 1)"
-          test -n "$SDKMANAGER"
-          "$SDKMANAGER" --sdk_root="$SDK_ROOT" --list >/dev/null
-          
-          AIDL_PATH="$(find "$SDK_ROOT/build-tools" -name aidl -type f | head -n 1)"
-          test -x "$AIDL_PATH"
+          test -d "$SDK_ROOT/platforms/android-34"
+          test -x "$SDK_ROOT/build-tools/34.0.0/aidl"
 
       - name: Build with Buildozer
         run: |
           SDK_ROOT="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
-          
           export ANDROIDSDK="$SDK_ROOT"
           export ANDROID_SDK_ROOT="$SDK_ROOT"
-          
-          AIDL_PATH="$(find "$SDK_ROOT/build-tools" -name aidl -type f | head -n 1)"
-          test -x "$AIDL_PATH"
-          
+
           buildozer -v android debug
 
       - name: Upload APK artifact
