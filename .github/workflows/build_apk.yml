@@ -31,40 +31,15 @@ jobs:
           java-version: '17'
 
       - name: Configure Android SDK
-        shell: bash
-        run: |
-          set -euxo pipefail
-          SDK_ROOT="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
-          SDKMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
-
-          test -x "$SDKMANAGER"
-
-          # Aceptar licencias antes de instalar paquetes
-          yes | "$SDKMANAGER" --sdk_root="$SDK_ROOT" --licenses >/dev/null || true
-
-          # Instalar herramientas necesarias en el SDK del entorno
-          "$SDKMANAGER" --sdk_root="$SDK_ROOT" \
-            "platform-tools" \
-            "platforms;android-34" \
-            "build-tools;34.0.0"
-
-          # Asegurar que aidl tenga permisos de ejecución
-          chmod +x "$SDK_ROOT/build-tools/34.0.0/aidl"
-
-          # Validación diagnóstica previa a la compilación
-          test -f "$SDK_ROOT/build-tools/34.0.0/aidl"
-          test -x "$SDK_ROOT/build-tools/34.0.0/aidl"
-
-          # Exportar todas las variables de entorno necesarias para Buildozer
-          {
-            echo "ANDROID_HOME=$SDK_ROOT"
-            echo "ANDROID_SDK_ROOT=$SDK_ROOT"
-            echo "ANDROIDSDK=$SDK_ROOT"
-            echo "$SDK_ROOT/platform-tools"
-            echo "$SDK_ROOT/cmdline-tools/latest/bin"
-          } >> "$GITHUB_ENV"
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools platforms;android-34 build-tools;34.0.0
+          accept-android-sdk-licenses: true
 
       - name: Build with Buildozer
+        env:
+          ANDROIDSDK: ${{ env.ANDROID_HOME }}
+          ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
         run: |
           buildozer -v android debug
 
