@@ -33,14 +33,30 @@ jobs:
       - name: Configure Android SDK
         uses: android-actions/setup-android@v3
         with:
-          packages: platform-tools platforms;android-34 build-tools;34.0.0
+          packages: |
+            platform-tools
+            platforms;android-34
+            build-tools;34.0.0
+            cmdline-tools;latest
           accept-android-sdk-licenses: true
 
       - name: Build with Buildozer
-        env:
-          ANDROIDSDK: ${{ env.ANDROID_HOME }}
-          ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
         run: |
+          # Forzar a que Buildozer apunte a la ruta correcta del SDK de Android del runner
+          export ANDROIDSDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          export ANDROID_SDK_ROOT="$ANDROIDSDK"
+          
+          # Asegurar que sdkmanager instale todo lo necesario en la ruta activa
+          sdkmanager --sdk_root="$ANDROIDSDK" \
+            "platform-tools" \
+            "platforms;android-34" \
+            "build-tools;34.0.0" \
+            "cmdline-tools;latest"
+
+          # Verificar que aidl exista y sea ejecutable antes de compilar
+          test -x "$ANDROIDSDK/build-tools/34.0.0/aidl"
+
+          # Compilar con Buildozer
           buildozer -v android debug
 
       - name: Upload APK artifact
