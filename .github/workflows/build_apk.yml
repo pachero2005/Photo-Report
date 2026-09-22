@@ -36,6 +36,16 @@ jobs:
           packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
           accept-android-sdk-licenses: true
 
+      - name: Configure Buildozer SDK path
+        run: |
+          echo "ANDROIDSDK=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
+          sdkmanager --licenses </dev/null || true
+          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+
+      - name: Reset Buildozer Android SDK cache
+        run: rm -rf ~/.buildozer/android/platform/android-sdk
+
       - name: Build with Buildozer
         run: |
           buildozer -v android debug
