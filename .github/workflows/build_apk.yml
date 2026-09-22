@@ -33,30 +33,31 @@ jobs:
       - name: Configure Android SDK
         uses: android-actions/setup-android@v3
         with:
-          packages: |
-            platform-tools
-            platforms;android-34
-            build-tools;34.0.0
-            cmdline-tools;latest
           accept-android-sdk-licenses: true
 
-      - name: Build with Buildozer
+      - name: Install Android SDK packages
         run: |
-          # Forzar a que Buildozer apunte a la ruta correcta del SDK de Android del runner
-          export ANDROIDSDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
-          export ANDROID_SDK_ROOT="$ANDROIDSDK"
+          SDK_ROOT="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
           
-          # Asegurar que sdkmanager instale todo lo necesario en la ruta activa
-          sdkmanager --sdk_root="$ANDROIDSDK" \
+          # Aceptar licencias y asegurar que sdkmanager instale los paquetes de forma limpia
+          yes | "$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          
+          "$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$SDK_ROOT" \
             "platform-tools" \
             "platforms;android-34" \
-            "build-tools;34.0.0" \
-            "cmdline-tools;latest"
+            "build-tools;34.0.0"
 
-          # Verificar que aidl exista y sea ejecutable antes de compilar
-          test -x "$ANDROIDSDK/build-tools/34.0.0/aidl"
+      - name: Build with Buildozer
+        env:
+          ANDROIDSDK: ${{ env.ANDROID_HOME }}
+          ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
+        run: |
+          SDK_ROOT="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          
+          # Verificar que aidl esté disponible y sea ejecutable antes de compilar
+          test -x "$SDK_ROOT/build-tools/34.0.0/aidl"
 
-          # Compilar con Buildozer
+          # Ejecutar Buildozer
           buildozer -v android debug
 
       - name: Upload APK artifact
