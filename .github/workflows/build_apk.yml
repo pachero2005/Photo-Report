@@ -1,18 +1,17 @@
-name: Build APK
+name: Build Android APK
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ "main" ]
-  workflow_dispatch:
+    branches: [ main, master ]
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Clonar repositorio
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Configurar Python
@@ -20,37 +19,59 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Instalar dependencias del sistema
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config \
-            zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev \
-            libssl-dev automake build-essential ccache
-
       - name: Instalar Buildozer y Cython
         run: |
-          pip install --upgrade pip
-          pip install buildozer cython==0.29.36
+          python -m pip install --upgrade "pip<26"
+          python -m pip install \
+            "buildozer==1.5.0" \
+            "python-for-android==2024.01.21" \
+            "cython==0.29.36"
 
       - name: Cachear Buildozer
         uses: actions/cache@v4
         with:
           path: ~/.buildozer
-          key: buildozer-v2-${{ runner.os }}-${{ hashFiles('buildozer.spec') }}
+          key: buildozer-v3-${{ runner.os }}-${{ hashFiles('buildozer.spec') }}
           restore-keys: |
-            buildozer-v2-${{ runner.os }}-
+            buildozer-v3-${{ runner.os }}
 
-      - name: Limpiar SDK incompleto
+      - name: Limpiar compilaciones anteriores
         run: |
-          rm -rf ~/.buildozer/android/platform/android-sdk
+          rm -rf .buildozer
+          rm -rf ~/.buildozer/android/platform/build-*
+          rm -rf ~/.buildozer/android/platform/python-for-android
+
+      - name: Set up Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Configure Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          accept-android-sdk-licenses: true
+          packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
+
+      - name: Verify Android SDK
+        shell: bash
+        run: |
+          set -euxo pipefail
+          SDK_ROOT="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+
+          test -d "$SDK_ROOT/platforms/android-34"
+          test -x "$SDK_ROOT/build-tools/34.0.0/aidl"
 
       - name: Compilar APK (debug)
         run: |
+          SDK_ROOT="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          export ANDROIDSDK="$SDK_ROOT"
+          export ANDROID_SDK_ROOT="$SDK_ROOT"
+
           yes | buildozer -v android debug
 
-      - name: Subir APK como artefacto
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: apk-debug
+          name: package-release-apk
           path: bin/*.apk
