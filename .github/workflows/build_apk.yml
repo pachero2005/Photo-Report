@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Copiar código del repositorio
@@ -45,7 +45,13 @@ jobs:
               libavcodec-dev \
               zlib1g-dev \
               libffi-dev \
-              libssl-dev
+              libssl-dev \
+              libtool \
+              libtool-bin \
+              autoconf \
+              automake \
+              m4 \
+              pkg-config
           python -m pip install --upgrade pip
           python -m pip install buildozer cython==0.29.36
 
@@ -76,7 +82,6 @@ jobs:
           rm -rf "$BUILD_SDK"
           ln -s "$SDK_ROOT" "$BUILD_SDK"
 
-          # Buscar la ruta de sdkmanager y crear enlace de compatibilidad para Buildozer
           SDKMANAGER="$(find "$SDK_ROOT/cmdline-tools" -type f -path '*/bin/sdkmanager' -print -quit)"
 
           if [ -z "$SDKMANAGER" ]; then
