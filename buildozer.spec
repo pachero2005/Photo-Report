@@ -22,7 +22,6 @@ source.include_dirs = assets
 version = 1.0
 
 # (list) Application requirements
-# ¡Importante! Incluimos python3, kivy, pillow (para PIL e ImageOps) y pyjnius (para Android)
 requirements = python3,kivy,pillow,pyjnius
 
 # (list) Supported orientations
@@ -38,33 +37,14 @@ android.api = 34
 # (int) Minimum API your APK will support.
 android.minapi = 24
 
-# (str) Android SDK version to use
-# android.sdk = 25
-
-# (str) Android NDK version to use
-# android.ndk = 25b
-
-# (int) Android NDK API to use.
-# android.ndk_api = 24
-
 # (bool) Use AndroidX
 android.enable_androidx = True
 
 # (list) Permissions
-# Requerido para abrir la cámara nativa y guardar en almacenamiento público (DCIM)
 android.permissions = CAMERA, WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE
-
-# (str) python-for-android branch to use
-# p4a.branch = master
-
-# (str) OU (Organization Unit) name for the key store
-#android.consumer_key = 
 
 # (list) The format used to package the app for each architecture
 android.archs = arm64-v8a, armeabi-v7a
-
-# (bool) If True, then skip building python-for-android
-# android.skip_update = False
 
 [buildozer]
 
