@@ -9,11 +9,11 @@ package.name = controllotes
 # (str) Package domain (needed for android packaging)
 package.domain = org.inspection
 
+# (str) Source directory where the main.py is located
+source.dir = .
+
 # (list) Source files to include (let it include json for states and jpg/png)
 source.include_exts = py,png,jpg,kv,atlas,json
-
-# (list) Source files to exclude (optional)
-#source.exclude_exts = spec
 
 # (list) List of directory to include (from source.dir)
 source.include_dirs = assets
@@ -31,10 +31,10 @@ orientation = portrait
 # Android specific
 #
 
-# (int) Target Android API, should be as high as possible. 
+# (int) Target Android API
 android.api = 34
 
-# (int) Minimum API your APK will support.
+# (int) Minimum API your APK will support
 android.minapi = 24
 
 # (bool) Use AndroidX
@@ -47,9 +47,5 @@ android.permissions = CAMERA, WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE
 android.archs = arm64-v8a, armeabi-v7a
 
 [buildozer]
-
-# (int) Log level (0 = error only, 1 = info, 2 = debug (with command output))
 log_level = 2
-
-# (int) Display warning if buildozer is run as root (0 = False, 1 = True)
 warn_root = 1
