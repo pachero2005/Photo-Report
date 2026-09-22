@@ -1,48 +1,75 @@
 [app]
 
-# (str) Título de tu aplicación
-title = Photo Report
+# (str) Title of your application
+title = Control de Lotes
 
-# (str) Nombre del paquete (sin espacios ni mayúsculas)
-package.name = photoreport
+# (str) Package name
+package.name = controllotes
 
-# (str) Dominio del paquete
-package.domain = org.pachero2005
+# (str) Package domain (needed for android packaging)
+package.domain = org.inspection
 
-# (list) Código fuente a incluir (en la raíz)
-source.dir = .
+# (list) Source files to include (let it include json for states and jpg/png)
+source.include_exts = py,png,jpg,kv,atlas,json
 
-# (list) Extensiones de archivos a incluir
-source.include_exts = py,png,jpg,jpeg,kv,json,txt
+# (list) Source files to exclude (optional)
+#source.exclude_exts = spec
 
-# (str) Versión de la aplicación
-version = 0.1
+# (list) List of directory to include (from source.dir)
+source.include_dirs = assets
 
-# (list) Dependencias de tu aplicación (Python, Kivy, Pillow y pyjnius)
+# (str) Application versioning
+version = 1.0
+
+# (list) Application requirements
+# ¡Importante! Incluimos python3, kivy, pillow (para PIL e ImageOps) y pyjnius (para Android)
 requirements = python3,kivy,pillow,pyjnius
 
-# (str) Orientación soportada de la pantalla
+# (list) Supported orientations
 orientation = portrait
 
-# (bool) Indicar si la aplicación debe ejecutarse a pantalla completa
-fullscreen = 0
+#
+# Android specific
+#
 
-# (list) Permisos requeridos por Android para la cámara y almacenamiento
+# (int) Target Android API, should be as high as possible. 
+android.api = 34
+
+# (int) Minimum API your APK will support.
+android.minapi = 24
+
+# (str) Android SDK version to use
+# android.sdk = 25
+
+# (str) Android NDK version to use
+# android.ndk = 25b
+
+# (int) Android NDK API to use.
+# android.ndk_api = 24
+
+# (bool) Use AndroidX
+android.enable_androidx = True
+
+# (list) Permissions
+# Requerido para abrir la cámara nativa y guardar en almacenamiento público (DCIM)
 android.permissions = CAMERA, WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE
 
-# (int) API de Android de destino (debe coincidir con la configurada en el GitHub Actions)
-android.api = 33
+# (str) python-for-android branch to use
+# p4a.branch = master
 
-# (int) API mínima de Android compatible
-android.minapi = 21
+# (str) OU (Organization Unit) name for the key store
+#android.consumer_key = 
 
-# (list) Arquitecturas soportadas (arm64-v8a es estándar para dispositivos modernos)
-android.archs = arm64-v8a
+# (list) The format used to package the app for each architecture
+android.archs = arm64-v8a, armeabi-v7a
+
+# (bool) If True, then skip building python-for-android
+# android.skip_update = False
 
 [buildozer]
 
-# (int) Nivel de registro (0 = error, 1 = info, 2 = debug con comandos detallados)
+# (int) Log level (0 = error only, 1 = info, 2 = debug (with command output))
 log_level = 2
 
-# (int) Mostrar advertencia si se ejecuta como root (necesario para GitHub Actions)
-warn_on_root = 1
+# (int) Display warning if buildozer is run as root (0 = False, 1 = True)
+warn_root = 1
