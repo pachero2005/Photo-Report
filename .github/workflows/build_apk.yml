@@ -19,6 +19,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: pip
 
       - name: Instalar dependencias del sistema
         run: |
@@ -28,26 +29,35 @@ jobs:
             zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev \
             libssl-dev automake build-essential ccache
 
+      - name: Verificar Python
+        run: |
+          which python
+          python --version
+          which python3
+          python3 --version
+
       - name: Instalar Buildozer y Cython
         run: |
-          pip install --upgrade pip
-          pip install buildozer cython==0.29.36
+          python -m pip install --upgrade pip
+          python -m pip install "buildozer==1.5.0" "cython==0.29.36"
 
       - name: Cachear Buildozer
         uses: actions/cache@v4
         with:
           path: ~/.buildozer
-          key: buildozer-v2-${{ runner.os }}-${{ hashFiles('buildozer.spec') }}
+          key: buildozer-v3-${{ runner.os }}-py311-${{ hashFiles('buildozer.spec') }}
           restore-keys: |
-            buildozer-v2-${{ runner.os }}-
+            buildozer-v3-${{ runner.os }}-py311-
 
-      - name: Limpiar SDK incompleto
+      - name: Limpiar entornos anteriores
         run: |
-          rm -rf ~/.buildozer/android/platform/android-sdk
+          rm -rf .buildozer
+          rm -rf ~/.buildozer/android/platform/build-*
+          rm -rf ~/.buildozer/android/platform/python-for-android
 
       - name: Compilar APK (debug)
         run: |
-          yes | buildozer -v android debug
+          python -m buildozer -v android debug
 
       - name: Subir APK como artefacto
         uses: actions/upload-artifact@v4
