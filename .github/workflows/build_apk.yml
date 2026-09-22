@@ -52,10 +52,7 @@ jobs:
       - name: Configurar Android SDK
         uses: android-actions/setup-android@v3
         with:
-          packages: |
-            platform-tools
-            platforms;android-33
-            build-tools;33.0.3
+          packages: 'platform-tools platforms;android-33 build-tools;33.0.3'
           accept-android-sdk-licenses: true
 
       - name: Configurar variables de entorno del SDK
