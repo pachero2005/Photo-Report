@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install buildozer cython==0.29.36
+          pip install --upgrade buildozer cython
 
       - name: Set up Java JDK
         uses: actions/setup-java@v4
@@ -50,7 +50,8 @@ jobs:
             "platforms;android-34" \
             "build-tools;34.0.0"
 
-          test -x "$SDK_ROOT/build-tools/34.0.0/aidl"
+          AIDL_PATH="$(find "$SDK_ROOT/build-tools" -name aidl -type f | head -n 1)"
+          test -x "$AIDL_PATH"
 
       - name: Verify Android SDK
         run: |
@@ -58,15 +59,20 @@ jobs:
           SDKMANAGER="$(find "$SDK_ROOT/cmdline-tools" -name sdkmanager -type f | head -n 1)"
           test -n "$SDKMANAGER"
           "$SDKMANAGER" --sdk_root="$SDK_ROOT" --list >/dev/null
-          test -x "$SDK_ROOT/build-tools/34.0.0/aidl"
+          
+          AIDL_PATH="$(find "$SDK_ROOT/build-tools" -name aidl -type f | head -n 1)"
+          test -x "$AIDL_PATH"
 
       - name: Build with Buildozer
-        env:
-          ANDROIDSDK: ${{ env.ANDROID_HOME }}
-          ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
         run: |
           SDK_ROOT="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
-          test -x "$SDK_ROOT/build-tools/34.0.0/aidl"
+          
+          export ANDROIDSDK="$SDK_ROOT"
+          export ANDROID_SDK_ROOT="$SDK_ROOT"
+          
+          AIDL_PATH="$(find "$SDK_ROOT/build-tools" -name aidl -type f | head -n 1)"
+          test -x "$AIDL_PATH"
+          
           buildozer -v android debug
 
       - name: Upload APK artifact
