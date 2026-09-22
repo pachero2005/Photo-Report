@@ -63,6 +63,13 @@ jobs:
           echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
           echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
 
+      - name: Vincular SDK del sistema con Buildozer
+        shell: bash
+        run: |
+          mkdir -p /home/runner/.buildozer/android/platform
+          rm -rf /home/runner/.buildozer/android/platform/android-sdk
+          ln -s "$ANDROID_HOME" /home/runner/.buildozer/android/platform/android-sdk
+
       - name: Compilar APK con Buildozer
         run: |
           buildozer -v android debug
