@@ -230,7 +230,6 @@ class SequenceCameraApp(App):
 
         root_scroll.add_widget(self.layout)
 
-        # Vigilante en segundo plano con corrección de orientación EXIF automática
         Clock.schedule_interval(self.daemon_redimensionador_pil, 2.0)
 
         return root_scroll
@@ -276,7 +275,6 @@ class SequenceCameraApp(App):
             with open(path, 'w') as f:
                 json.dump(data, f, indent=4)
                 
-            # Guardado adicional de respaldo directamente en la carpeta DCIM/PYTHON/LOTE si es Android
             if ANDROID:
                 try:
                     Environment = autoclass('android.os.Environment')
@@ -325,7 +323,6 @@ class SequenceCameraApp(App):
             pass
 
     def daemon_redimensionador_pil(self, dt):
-        """Corrige la orientación EXIF automáticamente, redimensiona y guarda en vertical"""
         if not ANDROID or not PilImage:
             return
         
@@ -357,19 +354,16 @@ class SequenceCameraApp(App):
                     
                     try:
                         with PilImage.open(file_path) as img:
-                            # Corrige automáticamente la rotación EXIF guardada por la cámara de Samsung
                             if ImageOps:
                                 img = ImageOps.exif_transpose(img)
                             
                             orig_w, orig_h = img.size
+                            tw, th = target_w, target_h
                             
-                            tw = target_w
-                            th = target_h
-                            
-                            if orig_w < orig_h: # La foto es vertical
+                            if orig_w < orig_h:
                                 if tw > th:
                                     tw, th = th, tw
-                            else: # La foto es horizontal
+                            else:
                                 if tw < th:
                                     tw, th = th, tw
 
