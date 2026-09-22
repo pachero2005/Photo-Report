@@ -34,18 +34,19 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           accept-android-sdk-licenses: true
+          packages: |
+            platform-tools
+            platforms;android-34
+            build-tools;34.0.0
 
-      - name: Install Android SDK packages
+      - name: Verify Android SDK
         run: |
           SDK_ROOT="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
-          
-          # Aceptar licencias y asegurar que sdkmanager instale los paquetes de forma limpia
-          yes | "$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
-          
-          "$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$SDK_ROOT" \
-            "platform-tools" \
-            "platforms;android-34" \
-            "build-tools;34.0.0"
+          # Buscar dinámicamente el sdkmanager instalado en el sistema sin importar la subversión de cmdline-tools
+          SDKMANAGER="$(find "$SDK_ROOT/cmdline-tools" -name sdkmanager -type f | head -n 1)"
+          test -n "$SDKMANAGER"
+          "$SDKMANAGER" --sdk_root="$SDK_ROOT" --list >/dev/null
+          test -x "$SDK_ROOT/build-tools/34.0.0/aidl"
 
       - name: Build with Buildozer
         env:
@@ -54,7 +55,7 @@ jobs:
         run: |
           SDK_ROOT="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
           
-          # Verificar que aidl esté disponible y sea ejecutable antes de compilar
+          # Doble comprobación antes de compilar con Buildozer
           test -x "$SDK_ROOT/build-tools/34.0.0/aidl"
 
           # Ejecutar Buildozer
