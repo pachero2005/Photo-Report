@@ -34,15 +34,27 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           accept-android-sdk-licenses: true
-          packages: |
-            platform-tools
-            platforms;android-34
-            build-tools;34.0.0
+
+      - name: Install Android SDK packages
+        shell: bash
+        run: |
+          set -euxo pipefail
+          SDK_ROOT="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          SDKMANAGER="$(find "$SDK_ROOT/cmdline-tools" -name sdkmanager -type f | head -n 1)"
+
+          test -x "$SDKMANAGER"
+
+          yes | "$SDKMANAGER" --sdk_root="$SDK_ROOT" --licenses >/dev/null || true
+          "$SDKMANAGER" --sdk_root="$SDK_ROOT" \
+            "platform-tools" \
+            "platforms;android-34" \
+            "build-tools;34.0.0"
+
+          test -x "$SDK_ROOT/build-tools/34.0.0/aidl"
 
       - name: Verify Android SDK
         run: |
           SDK_ROOT="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
-          # Buscar dinámicamente el sdkmanager instalado en el sistema sin importar la subversión de cmdline-tools
           SDKMANAGER="$(find "$SDK_ROOT/cmdline-tools" -name sdkmanager -type f | head -n 1)"
           test -n "$SDKMANAGER"
           "$SDKMANAGER" --sdk_root="$SDK_ROOT" --list >/dev/null
@@ -54,11 +66,7 @@ jobs:
           ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
         run: |
           SDK_ROOT="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
-          
-          # Doble comprobación antes de compilar con Buildozer
           test -x "$SDK_ROOT/build-tools/34.0.0/aidl"
-
-          # Ejecutar Buildozer
           buildozer -v android debug
 
       - name: Upload APK artifact
