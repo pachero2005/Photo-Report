@@ -1,107 +1,50 @@
-name: Compilar APK Kivy
+name: Build Android APK
 
 on:
   push:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Copiar código del repositorio
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Configurar Java (JDK 17)
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install buildozer cython==0.29.36
+
+      - name: Set up Java JDK
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Configurar Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - name: Instalar dependencias del sistema y Buildozer
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-              python3-pip \
-              build-essential \
-              git \
-              python3-dev \
-              ffmpeg \
-              libsdl2-dev \
-              libsdl2-image-dev \
-              libsdl2-mixer-dev \
-              libsdl2-ttf-dev \
-              libportmidi-dev \
-              libswscale-dev \
-              libavformat-dev \
-              libavcodec-dev \
-              zlib1g-dev \
-              libffi-dev \
-              libssl-dev \
-              libtool \
-              libtool-bin \
-              autoconf \
-              automake \
-              m4 \
-              pkg-config
-          python -m pip install --upgrade pip
-          python -m pip install buildozer cython==0.29.36
-
       - name: Configurar Android SDK
         uses: android-actions/setup-android@v3
         with:
-          packages: 'platform-tools platforms;android-33 build-tools;33.0.3'
+          packages: |
+            platform-tools
+            platforms;android-34
+            build-tools;34.0.0
           accept-android-sdk-licenses: true
 
-      - name: Configurar variables de entorno del SDK
-        shell: bash
-        run: |
-          SDK_ROOT="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
-          echo "ANDROIDSDK=$SDK_ROOT" >> "$GITHUB_ENV"
-          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
-          echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
-
-      - name: Vincular SDK del sistema con Buildozer
-        shell: bash
-        run: |
-          set -euo pipefail
-          SDK_ROOT="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
-          BUILD_SDK="/home/runner/.buildozer/android/platform/android-sdk"
-
-          echo "SDK root: $SDK_ROOT"
-
-          mkdir -p "$(dirname "$BUILD_SDK")"
-          rm -rf "$BUILD_SDK"
-          ln -s "$SDK_ROOT" "$BUILD_SDK"
-
-          SDKMANAGER="$(find "$SDK_ROOT/cmdline-tools" -type f -path '*/bin/sdkmanager' -print -quit)"
-
-          if [ -z "$SDKMANAGER" ]; then
-            echo "sdkmanager was not found"
-            find "$SDK_ROOT" -name sdkmanager -print
-            exit 1
-          fi
-
-          mkdir -p "$SDK_ROOT/tools/bin"
-          ln -sf "$SDKMANAGER" "$SDK_ROOT/tools/bin/sdkmanager"
-
-          echo "Using sdkmanager: $SDKMANAGER"
-          "$BUILD_SDK/tools/bin/sdkmanager" --version
-
-      - name: Compilar APK con Buildozer
+      - name: Build with Buildozer
         run: |
           buildozer -v android debug
 
-      - name: Subir APK como artefacto
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug-apk
+          name: package-release-apk
           path: bin/*.apk
