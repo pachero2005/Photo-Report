@@ -30,28 +30,27 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Configure Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          packages: platform-tools platforms;android-34 build-tools;34.0.0
-          accept-android-sdk-licenses: true
-
-      - name: Configure Buildozer SDK path
+      - name: Configure Android SDK in Buildozer Path
         shell: bash
         run: |
-          echo "ANDROIDSDK=$ANDROID_HOME" >> "$GITHUB_ENV"
-          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
+          set -euxo pipefail
+          BUILDOZER_SDK="$HOME/.buildozer/android/platform/android-sdk"
+          mkdir -p "$BUILDOZER_SDK"
+
+          # Utiliza el cmdline-tools instalado en el entorno para empaquetar directo en la ruta de Buildozer
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+            --sdk_root="$BUILDOZER_SDK" \
             "platform-tools" \
             "platforms;android-34" \
             "build-tools;34.0.0"
 
-          test -x "$ANDROID_HOME/build-tools/34.0.0/aidl"
+          echo "ANDROIDSDK=$BUILDOZER_SDK" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$BUILDOZER_SDK" >> "$GITHUB_ENV"
+
+          # Validación de que aidl existe antes de compilar
+          test -x "$BUILDOZER_SDK/build-tools/34.0.0/aidl"
 
       - name: Build with Buildozer
-        env:
-          ANDROIDSDK: ${{ env.ANDROID_HOME }}
-          ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
         run: |
           buildozer -v android debug
 
